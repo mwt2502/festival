@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,12 @@ namespace festival.Shared.Models
         Low,
         Medium,
         High,
-        Critical
     }
     public class Shift
     {
-        public ObjectId ShiftId { get; set; }
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
         public string Title { get; set; }
         public ShiftImportance Importance { get; set; }
         public string Area { get; set; }

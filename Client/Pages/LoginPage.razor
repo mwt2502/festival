@@ -1,5 +1,5 @@
 ﻿@using festival.Shared.Services
-@inject FakeAuthService FakeAuthService
+@inject NavigationManager NavigationManager
 
 @page "/login"
 
@@ -26,7 +26,7 @@ else
     else
     {
         <button @onclick="CreateNewVolunteer">Opret ny frivillig</button>
-        <button @onclick="ExistingVolunteer">Eksisterende frivillig</button>
+        <button @onclick="() => LoginAsVolunteer()">Eksisterende frivillig</button>
     }
 
     if (showPasswordEntry)
@@ -41,45 +41,50 @@ else
     private bool showSelection = true;
     private bool isCoordinator = false;
     private bool showPasswordEntry = false;
+    private string selectedRole = "";
     private string[] coordinatorNames = { "Coordinator 1", "Coordinator 2" }; // Dette kunne komme fra en database eller en service
 
     private void ChooseRole(bool coordinator)
     {
         isCoordinator = coordinator;
         showSelection = false;
-        showPasswordEntry = coordinator; // Vis password indgang med det samme for koordinatorer
+        showPasswordEntry = true; // Antager at vi viser password indgangen uanset hvad
+        selectedRole = coordinator ? "Coordinator" : "Volunteer";
     }
 
     private void CoordinatorSelected(ChangeEventArgs e)
     {
-        // Her vil du sætte den valgte koordinator i session eller lokal lagring
+        // Antag at denne metode bliver kaldt, når en koordinator vælges fra dropdown-menuen
         showPasswordEntry = true;
     }
 
     private void CreateNewVolunteer()
     {
         // Her vil du navigere brugeren til en side, hvor de kan oprette en ny frivillig
+        NavigationManager.NavigateTo("/signup");
     }
 
-    private void ExistingVolunteer()
+    private void LoginAsVolunteer()
     {
+        // Dette er en ekstra metode til at håndtere eksisterende frivillig login
+        selectedRole = "Volunteer";
         showPasswordEntry = true;
-        // Her vil du vise en dropdown til at vælge eksisterende frivillige, ligesom med koordinatorer
     }
 
     private void Login()
     {
         /*
-         if (selectedRole == "Coordinator")
+        // Her vil du logge brugeren ind med den valgte rolle
+        AuthService.LoginAs(selectedRole);
+        if (AuthService.IsCoordinator())
         {
-            FakeAuthService.LoginAs("Coordinator");
             NavigationManager.NavigateTo("/coordinatorpage");
         }
-        else if (selectedRole == "Volunteer")
+        else if (AuthService.IsVolunteer())
         {
-            FakeAuthService.LoginAs("Volunteer");
             NavigationManager.NavigateTo("/volunteerpage");
         }
     */
     }
+
 }
