@@ -1,4 +1,6 @@
-﻿namespace festival.Server.DataService
+﻿using Microsoft.Extensions.Configuration;
+
+namespace festival.Server.DataService
 {
     using festival.Shared.Models;
     using MongoDB.Driver;
@@ -13,9 +15,9 @@
 
         public MongoDbContext(IConfiguration configuration)
         {
-            var connectionString = configuration.GetSection("MongoDbSettings:ConnectionString").Value;
-            var client = new MongoClient(connectionString);
-            var databaseName = configuration.GetSection("MongoDbSettings:DatabaseName").Value;
+            var connectionString = configuration.GetValue<string>("MongoDbSettings:ConnectionString");
+            var client = new MongoClient(connectionString);        
+            var databaseName = configuration.GetValue<string>("MongoDbSettings:DatabaseName");
 
             _database = client.GetDatabase(databaseName);
 
@@ -27,3 +29,4 @@
     }
 
 }
+

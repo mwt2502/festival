@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class VolunteerController : ControllerBase
 {
     private readonly VolunteerService _volunteerService;
@@ -15,15 +15,16 @@ public class VolunteerController : ControllerBase
         _volunteerService = volunteerService;
     }
 
-    // GET: Volunteer
+    // GET: api/volunteer
     [HttpGet]
-    public async Task<ActionResult<List<Volunteer>>> GetVolunteers()
+    public async Task<ActionResult<IEnumerable<Volunteer>>> GetVolunteers()
     {
-        return await _volunteerService.GetAllAsync();
+        var volunteers = await _volunteerService.GetAllAsync();
+        return Ok(volunteers);
     }
 
-    // GET: Volunteer/5
-    [HttpGet("{id:length(24)}", Name = "GetVolunteer")]
+    // GET: api/volunteer/5
+    [HttpGet("{id}")]
     public async Task<ActionResult<Volunteer>> GetVolunteer(string id)
     {
         var volunteer = await _volunteerService.GetByIdAsync(id);
@@ -33,46 +34,42 @@ public class VolunteerController : ControllerBase
             return NotFound();
         }
 
-        return volunteer;
+        return Ok(volunteer);
     }
 
-    // POST: Volunteer
+    // POST: api/volunteer
     [HttpPost]
-    public async Task<ActionResult<Volunteer>> CreateVolunteer(Volunteer volunteer)
+    public async Task<ActionResult<Volunteer>> PostVolunteer(Volunteer volunteer)
     {
         await _volunteerService.CreateAsync(volunteer);
-
-        return CreatedAtRoute("GetVolunteer", new { id = volunteer.Id.ToString() }, volunteer);
+        return CreatedAtAction("GetVolunteer", new { id = volunteer.Id }, volunteer);
     }
 
-    // PUT: Volunteer/5
-    [HttpPut("{id:length(24)}")]
-    public async Task<IActionResult> UpdateVolunteer(string id, Volunteer updatedVolunteer)
+    // PUT: api/volunteer/5
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutVolunteer(string id, Volunteer volunteer)
     {
-        var volunteer = await _volunteerService.GetByIdAsync(id);
-
-        if (volunteer == null)
+        if (id != volunteer.Id)
         {
-            return NotFound();
+            return BadRequest();
         }
 
-        await _volunteerService.UpdateAsync(id, updatedVolunteer);
+        await _volunteerService.UpdateAsync(id, volunteer);
 
         return NoContent();
     }
 
-    // DELETE: Volunteer/5
-    [HttpDelete("{id:length(24)}")]
+    // DELETE: api/volunteer/5
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteVolunteer(string id)
     {
         var volunteer = await _volunteerService.GetByIdAsync(id);
-
         if (volunteer == null)
         {
             return NotFound();
         }
 
-        await _volunteerService.RemoveAsync(volunteer.Id);
+        await _volunteerService.RemoveAsync(id);
 
         return NoContent();
     }
