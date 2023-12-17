@@ -1,10 +1,11 @@
 ﻿using festival.Server.DataService;
+using festival.Server.Interfaces;
 using festival.Shared.Models;
 using MongoDB.Driver;
 
 namespace festival.Server.Services
 {
-    public class ShiftService
+    public class ShiftService : IShiftService
     {
         private readonly IMongoCollection<Shift> _shifts;
 

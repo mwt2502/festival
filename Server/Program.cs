@@ -1,6 +1,7 @@
 using festival.Server.DataService;
 using festival.Server.Interfaces;
 using festival.Server.Services;
+using festival.Shared.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<FakeAuthService>();
 builder.Services.AddScoped<IVolunteerService, VolunteerService>();
 builder.Services.AddScoped<ICoordinatorService, CoordinatorService>();
-builder.Services.AddScoped<IShiftService, ShiftService>(); 
+builder.Services.AddScoped<IShiftService, ShiftService>();
 
 
 builder.Services.AddControllersWithViews();

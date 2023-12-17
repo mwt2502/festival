@@ -1,10 +1,11 @@
 ﻿using festival.Server.DataService;
+using festival.Server.Interfaces;
 using festival.Shared.Models;
 using MongoDB.Driver;
 
 namespace festival.Server.Services
 {
-    public class VolunteerService
+    public class VolunteerService: IVolunteerService
     {
         private readonly IMongoCollection<Volunteer> _volunteers;
 
@@ -38,7 +39,7 @@ namespace festival.Server.Services
         }
 
         // Slet en volunteer
-        public async Task RemoveAsync(string id)
+        public async Task DeleteAsync(string id)
         {
             await _volunteers.DeleteOneAsync(volunteer => volunteer.Id == id);
         }

@@ -3,28 +3,28 @@ using festival.Shared.Models;
 using festival.Server.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using festival.Server.Interfaces;
 
 [ApiController]
 [Route("api/[controller]")]
 public class VolunteerController : ControllerBase
 {
-    private readonly VolunteerService _volunteerService;
+    private readonly IVolunteerService _volunteerService;
 
-    public VolunteerController(VolunteerService volunteerService)
+    public VolunteerController(IVolunteerService volunteerService)
     {
         _volunteerService = volunteerService;
     }
 
-    // GET: api/volunteer
+    // GET: Volunteer
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Volunteer>>> GetVolunteers()
+    public async Task<ActionResult<List<Volunteer>>> GetVolunteers()
     {
-        var volunteers = await _volunteerService.GetAllAsync();
-        return Ok(volunteers);
+        return await _volunteerService.GetAllAsync();
     }
 
-    // GET: api/volunteer/5
-    [HttpGet("{id}")]
+    // GET: Volunteer/5
+    [HttpGet("{id:length(24)}", Name = "GetVolunteer")]
     public async Task<ActionResult<Volunteer>> GetVolunteer(string id)
     {
         var volunteer = await _volunteerService.GetByIdAsync(id);
@@ -34,42 +34,46 @@ public class VolunteerController : ControllerBase
             return NotFound();
         }
 
-        return Ok(volunteer);
+        return volunteer;
     }
 
-    // POST: api/volunteer
+    // POST: Volunteer
     [HttpPost]
-    public async Task<ActionResult<Volunteer>> PostVolunteer(Volunteer volunteer)
+    public async Task<ActionResult<Volunteer>> CreateVolunteer(Volunteer volunteer)
     {
         await _volunteerService.CreateAsync(volunteer);
-        return CreatedAtAction("GetVolunteer", new { id = volunteer.Id }, volunteer);
+
+        return CreatedAtRoute("GetVolunteer", new { id = volunteer.Id.ToString() }, volunteer);
     }
 
-    // PUT: api/volunteer/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutVolunteer(string id, Volunteer volunteer)
-    {
-        if (id != volunteer.Id)
-        {
-            return BadRequest();
-        }
-
-        await _volunteerService.UpdateAsync(id, volunteer);
-
-        return NoContent();
-    }
-
-    // DELETE: api/volunteer/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteVolunteer(string id)
+    // PUT: Volunteer/5
+    [HttpPut("{id:length(24)}")]
+    public async Task<IActionResult> UpdateVolunteer(string id, Volunteer updatedVolunteer)
     {
         var volunteer = await _volunteerService.GetByIdAsync(id);
+
         if (volunteer == null)
         {
             return NotFound();
         }
 
-        await _volunteerService.RemoveAsync(id);
+        await _volunteerService.UpdateAsync(id, updatedVolunteer);
+
+        return NoContent();
+    }
+
+    // DELETE: Volunteer/5
+    [HttpDelete("{id:length(24)}")]
+    public async Task<IActionResult> DeleteVolunteer(string id)
+    {
+        var volunteer = await _volunteerService.GetByIdAsync(id);
+
+        if (volunteer == null)
+        {
+            return NotFound();
+        }
+
+        await _volunteerService.DeleteAsync(volunteer.Id);
 
         return NoContent();
     }

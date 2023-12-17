@@ -1,0 +1,26 @@
+﻿@page "/signup"
+@using festival.Server.Interfaces;
+@using festival.Shared.Models;
+@inject IVolunteerService VolunteerService
+
+<EditForm Model="@volunteer" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Navn:</label>
+        <InputText id="name" class="form-control" @bind-Value="volunteer.Name" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Tilmeld</button>
+</EditForm>
+
+@code {
+    private Volunteer volunteer = new Volunteer();
+
+    private async Task HandleValidSubmit()
+    {
+        await VolunteerService.CreateAsync(volunteer);
+        // Du kan tilføje logik for at navigere brugeren væk fra tilmeldingssiden eller vise en bekræftelse
+    }
+}

@@ -1,4 +1,5 @@
-﻿using festival.Server.Services;
+﻿using festival.Server.Interfaces;
+using festival.Server.Services;
 using festival.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,9 @@ namespace festival.Server.Controllers
     [Route("api/[controller]")]
     public class ShiftController : ControllerBase
     {
-        private readonly ShiftService _shiftService;
+        private readonly IShiftService _shiftService;
 
-        public ShiftController(ShiftService shiftService)
+        public ShiftController(IShiftService shiftService)
         {
             _shiftService = shiftService;
         }
