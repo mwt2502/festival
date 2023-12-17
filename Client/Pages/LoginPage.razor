@@ -1,0 +1,85 @@
+﻿@using festival.Shared.Services
+@inject FakeAuthService FakeAuthService
+
+@page "/login"
+
+<h3>Login</h3>
+
+@if (showSelection)
+{
+    <button @onclick="() => ChooseRole(true)">Coordinator</button>
+    <button @onclick="() => ChooseRole(false)">Volunteer</button>
+}
+else
+{
+    if (isCoordinator)
+    {
+        <label for="nameSelect">Vælg dit navn:</label>
+        <select id="nameSelect" @onchange="CoordinatorSelected">
+            <option value="">Vælg...</option>
+            @foreach (var name in coordinatorNames)
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+    }
+    else
+    {
+        <button @onclick="CreateNewVolunteer">Opret ny frivillig</button>
+        <button @onclick="ExistingVolunteer">Eksisterende frivillig</button>
+    }
+
+    if (showPasswordEntry)
+    {
+        <label for="password">Adgangskode:</label>
+        <input type="password" id="password" />
+        <button @onclick="Login">Login</button>
+    }
+}
+
+@code {
+    private bool showSelection = true;
+    private bool isCoordinator = false;
+    private bool showPasswordEntry = false;
+    private string[] coordinatorNames = { "Coordinator 1", "Coordinator 2" }; // Dette kunne komme fra en database eller en service
+
+    private void ChooseRole(bool coordinator)
+    {
+        isCoordinator = coordinator;
+        showSelection = false;
+        showPasswordEntry = coordinator; // Vis password indgang med det samme for koordinatorer
+    }
+
+    private void CoordinatorSelected(ChangeEventArgs e)
+    {
+        // Her vil du sætte den valgte koordinator i session eller lokal lagring
+        showPasswordEntry = true;
+    }
+
+    private void CreateNewVolunteer()
+    {
+        // Her vil du navigere brugeren til en side, hvor de kan oprette en ny frivillig
+    }
+
+    private void ExistingVolunteer()
+    {
+        showPasswordEntry = true;
+        // Her vil du vise en dropdown til at vælge eksisterende frivillige, ligesom med koordinatorer
+    }
+
+    private void Login()
+    {
+        /*
+         if (selectedRole == "Coordinator")
+        {
+            FakeAuthService.LoginAs("Coordinator");
+            NavigationManager.NavigateTo("/coordinatorpage");
+        }
+        else if (selectedRole == "Volunteer")
+        {
+            FakeAuthService.LoginAs("Volunteer");
+            NavigationManager.NavigateTo("/volunteerpage");
+        }
+    */
+    }
+}

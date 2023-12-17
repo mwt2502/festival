@@ -1,8 +1,17 @@
+using festival.Server.DataService;
+using festival.Server.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddScoped<VolunteerService>();
+builder.Services.AddScoped<CoordinatorService>();
+builder.Services.AddScoped<ShiftService>(); 
+builder.Services.AddScoped<FakeAuthService>();
+
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
