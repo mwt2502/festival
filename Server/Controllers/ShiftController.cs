@@ -83,4 +83,28 @@ namespace festival.Server.Controllers
             return NoContent();
         }
     }
+    /* NOGET HERTIL
+    [HttpPut("assign/{shiftId}/{volunteerId}")]
+     public async Task<IActionResult> AssignVolunteer(string shiftId, string volunteerId)
+    {
+        var shift = await _shiftService.GetByIdAsync(shiftId);
+        if (shift == null)
+        {
+            return NotFound();
+        }
+
+        if (shift.IsFull)
+        {
+            return BadRequest("Vagten er allerede fuld.");
+        }
+
+        // Logik for at tildele den frivillige til vagten
+        // Dette kan inkludere at tilføje frivilliges ID til en liste i 'Shift' objektet
+        // Husk at opdatere 'IsFull' status hvis nødvendigt
+        shift.AssignVolunteer(volunteerId); // Antager denne metode findes og håndterer tilmeldingen
+
+        await _shiftService.UpdateAsync(shiftId, shift);
+
+        return NoContent(); // Eller OK(shift) hvis du vil returnere den opdaterede vagt
+    }*/
 }

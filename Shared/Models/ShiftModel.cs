@@ -40,7 +40,7 @@ namespace festival.Shared.Models
         public int RequiredVolunteers { get; set; }
         public int AssignedVolunteers { get; set; }
 
-        /* public ObjectId? AssignedVolunteerId { get; set; } // Referencer til en Volunteer */
+        public ObjectId? AssignedVolunteersId { get; set; } // Referencer til en Volunteer 
         public bool IsFull => AssignedVolunteers >= RequiredVolunteers;
 
         // Server validering af datoer 
