@@ -36,6 +36,7 @@ namespace festival.Shared.Models
             "Sluttid skal være i format TT:mm")]
                 public string? EndTime { get; set; }
 
+        [Range(1, 50, ErrorMessage = "Antallet af krævede frivillige skal være mellem 1 og 50.")]
         public int RequiredVolunteers { get; set; }
         public int AssignedVolunteers { get; set; }
 
@@ -43,11 +44,30 @@ namespace festival.Shared.Models
         public bool IsFull => AssignedVolunteers >= RequiredVolunteers;
 
         // Server validering af datoer 
-        public bool ValidateTimes()
+        public string ValidateTimes()
         {
             var timeRegex = new Regex(@"^(?:[01]\d|2[0-3]):[0-5]\d$");
-            return timeRegex.IsMatch(StartTime) && timeRegex.IsMatch(EndTime);
+            if (string.IsNullOrWhiteSpace(StartTime) || !timeRegex.IsMatch(StartTime))
+            {
+                return "Starttid skal være i format TT:mm";
+            }
+
+            if (string.IsNullOrWhiteSpace(EndTime) || !timeRegex.IsMatch(EndTime))
+            {
+                return "Sluttid skal være i format TT:mm";
+            }
+
+            TimeSpan start = TimeSpan.Parse(StartTime);
+            TimeSpan end = TimeSpan.Parse(EndTime);
+
+            if (end <= start.Add(TimeSpan.FromHours(1)))
+            {
+                return "Hovsa! Tjek lige tiderne igen. Sluttid skal være mindst en time efter starttiden";
+            }
+
+            return string.Empty; // Ingen fejl
         }
+
         public enum ShiftImportance
         {
             [EnumMember(Value = "Low")]

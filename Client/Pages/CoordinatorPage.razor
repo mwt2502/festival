@@ -1,1 +1,102 @@
-﻿
+﻿@page "/coordinatorpage"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using festival.Shared.Models
+
+<h3>Opret ny vagt</h3>
+
+<PageTitle>Landing Page</PageTitle>
+<EditForm Model="@shift" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <!--Div der repræsentere titel/Title-->
+    <div class="form-group">
+        <label for="title">Titel:</label>
+        <InputText id="title" class="form-control" placeholder="f.eks: Opvasker" @bind-Value="shift.Title" />
+    </div>
+
+    <!--Div der repræsentere område/Area -->
+    <div class="form-group">
+        <label for="area">Område:</label>
+        <InputSelect id="area" class="form-control" @bind-Value="shift.Area">
+            <option value="">Vælg et område...</option>
+            @foreach (var area in Enum.GetValues<festival.Shared.Models.Shift.ShiftArea>())
+            {
+                <option value="@area">@area</option>
+            }
+        </InputSelect>
+    </div>
+
+    <!--Div der repræsentere starttid/StartTime -->
+    <div class="form-group">
+        <label for="date">Starttid (TT:MM):</label>
+        <InputText id="date" class="form-control" @onchange="ValidateInput" placeholder="f.eks: 10:30" @bind-Value="shift.StartTime" />
+    </div>
+
+    <!--Div der repræsentere sluttid/EndTime -->
+    <div>
+        <label for="date">Sluttid (TT:MM)</label>
+        <InputText id="date" class="form-control" @onchange="ValidateInput" placeholder="f.eks: 23:30" @bind-Value="shift.EndTime" />
+    </div>
+
+    <!--Div der repræsentere påkrævede frivillige/requiredVolunteers -->
+    <div class="form-group">
+        <label for="requiredVolunteers">Påkrævede frivillige:</label>
+        <InputNumber id="requiredVolunteers" class="form-control" @bind-Value="shift.RequiredVolunteers" />
+    </div>
+
+    <!--Div der repræsentere vigtighed/importance -->
+    <div class="form-group">
+        <label for="importance">Vigtighed:</label>
+        <InputSelect id="importance" class="form-control" @bind-Value="shift.Importance">
+            <option value="">Vælg vigtighed...</option>
+            @foreach (var importance in Enum.GetValues<festival.Shared.Models.Shift.ShiftImportance>())
+            {
+                <option value="@importance">@importance</option>
+            }
+        </InputSelect>
+    </div>
+
+    <!--Knap der opretter shift -->
+    <button type="submit" class="btn btn-primary">Opret vagt</button>
+</EditForm>
+
+@code {
+    private Shift shift = new Shift();
+    private string errorMessage; // ny
+
+    private void ValidateInput(ChangeEventArgs e)
+    {
+        errorMessage = shift.ValidateTimes();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        errorMessage = shift.ValidateTimes();
+        if (!string.IsNullOrEmpty(errorMessage))
+        {
+            // Hvis der er en fejl, stop og vis fejlbeskeden
+            return;
+        }
+        var response = await Http.PostAsJsonAsync("api/shift", shift);
+        if (response.IsSuccessStatusCode)
+        {
+            
+            shift = new Shift(); // Nulstil formen
+             // NavigationManager.NavigateTo("/");
+        }
+        else 
+        {
+            // Håndter fejl
+            Console.Error.WriteLine("Fejl under oprettelse af shift.");
+        }
+    }
+
+}
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
