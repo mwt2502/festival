@@ -39,7 +39,13 @@ namespace festival.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Shift shift)
         {
+            if (!shift.ValidateTimes())
+            {
+                return BadRequest("Start time or end time is not in the correct format.");
+            }
+
             await _shiftService.CreateAsync(shift);
+
             return CreatedAtAction(nameof(Get), new { id = shift.Id }, shift);
         }
 

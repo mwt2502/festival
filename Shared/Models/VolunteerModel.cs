@@ -2,6 +2,7 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace festival.Shared.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
+
+        [Required(ErrorMessage = "Navn er påkrævet")]
         public string Name { get; set; }
         public List<ObjectId> AssignedShifts { get; set; } = new List<ObjectId>(); // Referencer til Shifts
 

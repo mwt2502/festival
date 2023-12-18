@@ -1,9 +1,7 @@
-﻿@page "/coordinatorpage"
-@inject HttpClient Http
+﻿@inject HttpClient Http
 @using festival.Shared.Models
 
-<h3>Opret ny Shift</h3>
-
+<h3>CreateShiftForm</h3>
 <EditForm Model="@shift" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -47,23 +45,3 @@
 
     <button type="submit" class="btn btn-primary">Opret Shift</button>
 </EditForm>
-
-@code {
-    private Shift shift = new Shift();
-
-    private async Task HandleValidSubmit()
-    {
-        var response = await Http.PostAsJsonAsync("api/shift", shift);
-        if (response.IsSuccessStatusCode)
-        {
-            // Håndter succes, f.eks. ved at nulstille formen eller navigere væk
-            shift = new Shift(); // Nulstil formen
-                                      // NavigationManager.NavigateTo("somepage"); // Hvis du vil navigere væk
-        }
-        else
-        {
-            // Håndter fejl
-            Console.Error.WriteLine("Fejl under oprettelse af shift.");
-        }
-    }
-}

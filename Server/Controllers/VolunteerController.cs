@@ -15,7 +15,6 @@ public class VolunteerController : ControllerBase
     {
         _volunteerService = volunteerService;
     }
-
     // GET: Volunteer
     [HttpGet]
     public async Task<ActionResult<List<Volunteer>>> GetVolunteers()
@@ -76,5 +75,7 @@ public class VolunteerController : ControllerBase
         await _volunteerService.DeleteAsync(volunteer.Id);
 
         return NoContent();
+ 
+
     }
 }

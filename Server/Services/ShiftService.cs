@@ -1,6 +1,8 @@
 ﻿using festival.Server.DataService;
 using festival.Server.Interfaces;
 using festival.Shared.Models;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace festival.Server.Services
@@ -11,8 +13,11 @@ namespace festival.Server.Services
 
         public ShiftService(MongoDbContext dbContext)
         {
+            var pack = new ConventionPack { new EnumRepresentationConvention(BsonType.String) };
+            ConventionRegistry.Register("EnumStringConvention", pack, t => true);
             _shifts = dbContext.Shifts;
         }
+
 
         // Hent alle shifts
         public async Task<List<Shift>> GetAllAsync()
@@ -51,5 +56,7 @@ namespace festival.Server.Services
         {
             await _shifts.DeleteOneAsync(shift => shift.Id == id);
         }
+    
+
     }
 }

@@ -17,29 +17,29 @@ namespace festival.Client.Services
 
         public async Task<List<Volunteer>> GetAllAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<Volunteer>>("api/volunteers");
+            return await _httpClient.GetFromJsonAsync<List<Volunteer>>("api/volunteer");
         }
 
         public async Task<Volunteer> GetByIdAsync(string id)
         {
-            return await _httpClient.GetFromJsonAsync<Volunteer>($"api/volunteers/{id}");
+            return await _httpClient.GetFromJsonAsync<Volunteer>($"api/volunteer/{id}");
         }
 
         public async Task CreateAsync(Volunteer volunteer)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/volunteers", volunteer);
+            var response = await _httpClient.PostAsJsonAsync("api/volunteer", volunteer);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task UpdateAsync(string id, Volunteer volunteer)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/volunteers/{id}", volunteer);
+            var response = await _httpClient.PutAsJsonAsync($"api/volunteer/{id}", volunteer);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task DeleteAsync(string id)
         {
-            var response = await _httpClient.DeleteAsync($"api/volunteers/{id}");
+            var response = await _httpClient.DeleteAsync($"api/volunteer/{id}");
             response.EnsureSuccessStatusCode();
         }
     }

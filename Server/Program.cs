@@ -1,28 +1,58 @@
 using festival.Server.DataService;
 using festival.Server.Interfaces;
 using festival.Server.Services;
-using festival.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Options;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoDbContext>();
-builder.Services.AddScoped<FakeAuthService>();
 builder.Services.AddScoped<IVolunteerService, VolunteerService>();
 builder.Services.AddScoped<ICoordinatorService, CoordinatorService>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 
+builder.Services.AddEndpointsApiExplorer(); 
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CORSPolicy", builder =>
+    {
+        builder.WithOrigins("http://example.com") // Erstat med den faktiske oprindelse, hvis nødvendigt
+               .AllowAnyHeader()
+               .AllowAnyMethod(); // Tillader alle metoder, inklusive POST
+    });
+});
+
+
+
 var app = builder.Build();
+
+app.UseCors("AllowAll");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseWebAssemblyDebugging();
+    app.UseCors("CORSPolicy");
+
+    app.UseSwagger(); // Tilføj Swagger middleware
+    app.UseSwaggerUI(); // Tilføj Swagger UI middleware
 }
 else
 {
