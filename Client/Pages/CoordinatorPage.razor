@@ -3,9 +3,10 @@
 @inject NavigationManager NavigationManager
 @using festival.Shared.Models
 
+<PageTitle>Koordinatorside</PageTitle>
+
 <h3>Opret ny vagt</h3>
 
-<PageTitle>Landing Page</PageTitle>
 <EditForm Model="@shift" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />

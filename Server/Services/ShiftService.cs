@@ -56,7 +56,5 @@ namespace festival.Server.Services
         {
             await _shifts.DeleteOneAsync(shift => shift.Id == id);
         }
-    
-
     }
 }

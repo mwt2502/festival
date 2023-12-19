@@ -83,7 +83,7 @@ namespace festival.Server.Controllers
             return NoContent();
         }
     }
-    /* NOGET HERTIL
+    /* virker ikke.
     [HttpPut("assign/{shiftId}/{volunteerId}")]
      public async Task<IActionResult> AssignVolunteer(string shiftId, string volunteerId)
     {

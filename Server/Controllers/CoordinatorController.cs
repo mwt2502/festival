@@ -7,11 +7,11 @@ namespace festival.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CoordinatorsController : ControllerBase
+    public class CoordinatorController : ControllerBase
     {
         private readonly CoordinatorService _coordinatorService;
 
-        public CoordinatorsController(CoordinatorService coordinatorService)
+        public CoordinatorController(CoordinatorService coordinatorService)
         {
             _coordinatorService = coordinatorService;
         }

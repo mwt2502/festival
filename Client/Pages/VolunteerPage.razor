@@ -1,16 +1,19 @@
 ﻿@page "/volunteerpage"
 @inject HttpClient Http
+@inject IShiftService ShiftService
+@using festival.Client.Services;
+@using festival.Server.Interfaces;
 @using festival.Shared.Models
 
 <h3>Vælg en vagt</h3>
 
 @if (shifts == null)
 {
-    <p><em>Henter tilgængelige vagter...</em></p>
+    <p>Henter tilgængelige vagter...</p>
 }
 else if (shifts.Count == 0)
 {
-    <p>Ingen tilgængelige vagter på dette tidspunkt.</p>
+    <p>Ingen tilgængelige vagter i øjeblikket.</p>
 }
 else
 {
@@ -22,7 +25,7 @@ else
                 <th>Starttid</th>
                 <th>Sluttid</th>
                 <th>Vigtighed</th>
-                <th>Handling</th>
+                <!-- Flere kolonner efter behov -->
             </tr>
         </thead>
         <tbody>
@@ -30,20 +33,11 @@ else
             {
                 <tr>
                     <td>@shift.Title</td>
-                    <td>@shift.Area</td>
+                    <td>@shift.Area.ToString()</td>
                     <td>@shift.StartTime</td>
                     <td>@shift.EndTime</td>
-                    <td>@shift.Importance</td>
-                    <td>
-                        @if (!shift.IsFull)
-                        {
-                            <button class="btn btn-primary" @onclick="@(() => AssignVolunteer(shift))">Vælg</button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-secondary" disabled>Fuld</button>
-                        }
-                    </td>
+                    <td>@shift.Importance.ToString()</td>
+                    <!-- Flere celler efter behov -->
                 </tr>
             }
         </tbody>
@@ -51,16 +45,10 @@ else
 }
 
 @code {
-    private List<Shift>? shifts;
+    private List<Shift> shifts;
 
     protected override async Task OnInitializedAsync()
     {
-        shifts = await Http.GetFromJsonAsync<List<Shift>>("api/shift");
-    }
-
-    private async Task AssignVolunteer(Shift shift)
-    {
-        // Her skal du tilføje logik for at tildele en frivillig til vagten
-        // Dette kan involvere at sende en anmodning til serveren og opdatere UI'et
+        shifts = await ShiftService.GetAllAsync();
     }
 }
