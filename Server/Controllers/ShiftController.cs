@@ -3,6 +3,8 @@ using festival.Server.Services;
 using festival.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using System.ComponentModel.DataAnnotations;
 
 namespace festival.Server.Controllers
 {
@@ -32,7 +34,6 @@ namespace festival.Server.Controllers
             {
                 return NotFound();
             }
-
             return Ok(shift);
         }
 
@@ -56,7 +57,6 @@ namespace festival.Server.Controllers
             // Returnerer et CreatedAtAction svar med den nye shift
             return CreatedAtAction(nameof(Get), new { id = shift.Id }, shift);
         }
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] Shift shift)
         {
@@ -82,29 +82,30 @@ namespace festival.Server.Controllers
             await _shiftService.DeleteAsync(id);
             return NoContent();
         }
+        [HttpPut("{shiftId}/assign")]
+        public async Task<IActionResult> AssignVolunteerToShift(string shiftId, [FromBody] AssignVolunteerDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _shiftService.AssignVolunteer(shiftId, dto.VolunteerId);
+                return NoContent(); // 204 No Content hvis det lykkes
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        public class AssignVolunteerDto
+        {
+            [Required]
+            public string VolunteerId { get; set; }
+        }
     }
-    /* virker ikke.
-    [HttpPut("assign/{shiftId}/{volunteerId}")]
-     public async Task<IActionResult> AssignVolunteer(string shiftId, string volunteerId)
-    {
-        var shift = await _shiftService.GetByIdAsync(shiftId);
-        if (shift == null)
-        {
-            return NotFound();
-        }
 
-        if (shift.IsFull)
-        {
-            return BadRequest("Vagten er allerede fuld.");
-        }
-
-        // Logik for at tildele den frivillige til vagten
-        // Dette kan inkludere at tilføje frivilliges ID til en liste i 'Shift' objektet
-        // Husk at opdatere 'IsFull' status hvis nødvendigt
-        shift.AssignVolunteer(volunteerId); // Antager denne metode findes og håndterer tilmeldingen
-
-        await _shiftService.UpdateAsync(shiftId, shift);
-
-        return NoContent(); // Eller OK(shift) hvis du vil returnere den opdaterede vagt
-    }*/
 }

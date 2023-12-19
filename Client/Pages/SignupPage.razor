@@ -1,1 +1,48 @@
-﻿
+﻿@page "/signup"
+@using Blazored.LocalStorage;
+@using festival.Client.Services;
+@using festival.Server.Interfaces;
+@using festival.Shared.Models
+
+@inject ILocalStorageService LocalStorage
+@inject IVolunteerService VolunteerService
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>Tilmeld dig som frivillig</PageTitle>
+
+<div class="container mt-5">
+    <EditForm Model="@volunteer" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="name">Navn:</label>
+            <InputText id="name" class="form-control" @bind-Value="volunteer.Name" />
+            <ValidationMessage For="@(() => volunteer.Name)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Opret dig som frivillig</button>
+    </EditForm>
+</div>
+
+@code {
+    private Volunteer volunteer = new Volunteer();
+    private string errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await LocalStorage.SetItemAsync("volunteerId", volunteer.Id);
+            await LocalStorage.SetItemAsync("volunteerName", volunteer.Name);
+            await VolunteerService.CreateAsync(volunteer);
+            NavigationManager.NavigateTo("/VolunteerPage");
+        }
+        catch (Exception ex)
+        {
+            // Håndter fejl
+        }
+    }
+
+}

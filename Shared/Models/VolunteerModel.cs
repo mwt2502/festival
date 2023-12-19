@@ -14,10 +14,10 @@ namespace festival.Shared.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [Required(ErrorMessage = "Navn er påkrævet")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public List<ObjectId> AssignedShifts { get; set; } = new List<ObjectId>(); // Referencer til Shifts
 
         public void AssignShift(ObjectId shiftId)

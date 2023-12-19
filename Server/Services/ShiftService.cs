@@ -4,6 +4,7 @@ using festival.Shared.Models;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Net.Http;
 
 namespace festival.Server.Services
 {
@@ -17,7 +18,17 @@ namespace festival.Server.Services
             ConventionRegistry.Register("EnumStringConvention", pack, t => true);
             _shifts = dbContext.Shifts;
         }
+        public async Task AssignVolunteer(string shiftId, string volunteerId)
+        {
+            var filter = Builders<Shift>.Filter.Eq(s => s.Id, shiftId);
+            var update = Builders<Shift>.Update.AddToSet(s => s.AssignedVolunteersId, new ObjectId(volunteerId));
+            var result = await _shifts.UpdateOneAsync(filter, update);
 
+            if (!result.IsAcknowledged || result.ModifiedCount == 0)
+            {
+                throw new Exception("Vagt blev ikke opdateret med den frivillige.");
+            }
+        }
 
         // Hent alle shifts
         public async Task<List<Shift>> GetAllAsync()
@@ -56,5 +67,8 @@ namespace festival.Server.Services
         {
             await _shifts.DeleteOneAsync(shift => shift.Id == id);
         }
+
+
     }
+
 }

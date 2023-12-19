@@ -1,10 +1,14 @@
 ﻿@page "/volunteerpage"
 @inject HttpClient Http
 @inject IShiftService ShiftService
+@inject ILocalStorageService LocalStorage
+
+@using Blazored.LocalStorage;
 @using festival.Client.Services;
 @using festival.Server.Interfaces;
 @using festival.Shared.Models
 
+<h2>Velkommen @volunteerName</h2>
 <h3>Vælg en vagt</h3>
 
 @if (shifts == null)
@@ -24,8 +28,11 @@ else
                 <th>Område</th>
                 <th>Starttid</th>
                 <th>Sluttid</th>
-                <th>Vigtighed</th>
-                <!-- Flere kolonner efter behov -->
+                <th>Prioritet</th>
+                <th>Tilmedte frivillige</th>
+                <th>Nødvendige frivillige</th>
+                <th>Åbne pladser</th>
+                <th></th> <!-- Kolonne for tilmeldingsknappen -->
             </tr>
         </thead>
         <tbody>
@@ -37,7 +44,19 @@ else
                     <td>@shift.StartTime</td>
                     <td>@shift.EndTime</td>
                     <td>@shift.Importance.ToString()</td>
-                    <!-- Flere celler efter behov -->
+                    <td>@shift.AssignedVolunteers</td>
+                    <td>@shift.RequiredVolunteers</td>
+                    <td>@(shift.RequiredVolunteers - shift.AssignedVolunteers)</td>
+                    <td>
+                        @if (!shift.IsFull)
+                        {
+                            <button class="btn btn-primary" @onclick="() => AssignShift(shift.Id)">Tilmeld</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary" disabled>Fuld</button>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
@@ -46,9 +65,31 @@ else
 
 @code {
     private List<Shift> shifts;
+    private string volunteerName;
+    private string volunteerId;
 
     protected override async Task OnInitializedAsync()
     {
+        volunteerId = await LocalStorage.GetItemAsync<string>("volunteerId") ?? "Frivillig";
+        volunteerName = await LocalStorage.GetItemAsync<string>("volunteerName") ?? "Frivillig";
+
         shifts = await ShiftService.GetAllAsync();
     }
+
+private async Task AssignShift(string shiftId)
+{
+    var volunteerId = await LocalStorage.GetItemAsync<string>("volunteerId");
+    var volunteerName = await LocalStorage.GetItemAsync<string>("volunteerName"); // Hent navnet også
+
+    if (!string.IsNullOrEmpty(volunteerId) && !string.IsNullOrEmpty(volunteerName))
+    {
+        // Antager at din AssignVolunteer metode også tager et navn som parameter
+        await ShiftService.AssignVolunteer(shiftId, volunteerId);
+        // Opdater UI eller vis bekræftelse
+    }
+    else
+    {
+        // Fejlhåndtering: Ingen frivillig valgt
+    }
+}
 }

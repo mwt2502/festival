@@ -40,8 +40,9 @@ namespace festival.Shared.Models
         public int RequiredVolunteers { get; set; }
         public int AssignedVolunteers { get; set; }
 
-        public int? AssignedVolunteersId { get; set; } // Referencer til en Volunteer 
-        public bool IsFull => AssignedVolunteers >= RequiredVolunteers;
+        public List<ObjectId> AssignedVolunteersId { get; set; } = new List<ObjectId>();
+
+        public bool IsFull => AssignedVolunteersId.Count >= RequiredVolunteers;
 
         // Server validering af datoer 
         public string ValidateTimes()
@@ -90,11 +91,11 @@ namespace festival.Shared.Models
             Scene_3,
         }
 
-        public void AssignVolunteer()
+        public void AssignVolunteer(ObjectId volunteerId)
         {
             if (!IsFull)
             {
-                AssignedVolunteers++;
+                AssignedVolunteersId.Add(volunteerId);
                 // Yderligere logik efter behov
             }
             else
@@ -103,17 +104,9 @@ namespace festival.Shared.Models
             }
         }
 
-        public void UnassignVolunteer()
+        public void UnassignVolunteer(ObjectId volunteerId)
         {
-            if (AssignedVolunteers > 0)
-            {
-                AssignedVolunteers--;
-                // Yderligere logik efter behov
-            }
-            else
-            {
-                // Håndtering af ingen tildelte frivillige
-            }
+            AssignedVolunteersId.Remove(volunteerId);
         }
     }
 }

@@ -8,5 +8,8 @@ namespace festival.Server.Interfaces
         Task CreateAsync(Shift shift);
         Task UpdateAsync(string id, Shift shiftIn);
         Task DeleteAsync(string id);
+        Task AssignVolunteer(string shiftId, string volunteerId);
+
+
     }
 }

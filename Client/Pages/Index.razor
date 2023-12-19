@@ -1,19 +1,80 @@
-﻿@inject NavigationManager NavigationManager
+﻿@page "/"
+@using Blazored.LocalStorage
+@using festival.Server.Interfaces
+@using festival.Shared.Models
+@inject IVolunteerService VolunteerService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
 
-@page "/"
-
-<PageTitle>Landing Page</PageTitle>
+<PageTitle>Landingpage</PageTitle>
 
 <div class="text-center">
     <h1>Velkommen til festivalens vagtsystem</h1>
     <p>Er du frivillig eller koordinator til årets festival?</p>
 
     <div class="mt-5">
-        <NavLink class="btn btn-primary btn-lg mr-3" href="VolunteerPage" >Frivillig</NavLink>
+        <button class="btn btn-primary btn-lg mr-3" @onclick="ShowVolunteerOptions">Frivillig</button>
         <NavLink class="btn btn-secondary btn-lg" href="coordinatorpage">Koordinator</NavLink>
     </div>
+
+    @if (showVolunteerOptions)
+    {
+        @if (volunteers == null)
+        {
+            <p>Henter frivillige...</p>
+        }
+        else
+        {
+            <div>
+                <br>
+                <br> 
+                <h3>Vælg din profil eller opret dig!</h3>
+                <br>
+            </div>
+            <div>
+                <select @onchange="SelectVolunteer">
+                    <option value="">Vælg profil...</option>
+                    @foreach (var volunteer in volunteers)
+                    {
+                        <option value="@volunteer.Id">@volunteer.Name</option>
+                    }
+                </select>
+            </div>
+            <button class="btn btn-link" @onclick="GoToSignUp">Opret dig</button>
+        }
+    }
 </div>
 
 @code {
+    private List<Volunteer>? volunteers;
+    private string? selectedVolunteerId;
+    private bool showVolunteerOptions = false;
+    private bool IsVolunteerSelected => !string.IsNullOrWhiteSpace(selectedVolunteerId);
 
+    private async Task ShowVolunteerOptions()
+    {
+        showVolunteerOptions = true;
+        volunteers = await VolunteerService.GetAllAsync();
+    }
+
+    private async Task SelectVolunteer(ChangeEventArgs e)
+    {
+        selectedVolunteerId = e.Value.ToString();
+        if (!string.IsNullOrEmpty(selectedVolunteerId))
+        {
+            var selectedVolunteer = volunteers.FirstOrDefault(v => v.Id == selectedVolunteerId);
+            if (selectedVolunteer != null)
+            {
+                await LocalStorage.SetItemAsync("volunteerId", selectedVolunteer.Id);
+                await LocalStorage.SetItemAsync("volunteerName", selectedVolunteer.Name);
+                NavigationManager.NavigateTo("/VolunteerPage");
+            }
+        }
+    }
+
+
+    private void GoToSignUp()
+    {
+        NavigationManager.NavigateTo("/signup");
+    }
 }

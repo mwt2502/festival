@@ -10,7 +10,7 @@ namespace festival.Server.DataService
         private readonly IMongoDatabase _database;
 
         public IMongoCollection<Volunteer> Volunteers { get; }
-        public IMongoCollection<Coordinator> Coordinators { get; }
+        public IMongoCollection<Coordinator> Coordinators { get; } // Ikke brugt i denne version
         public IMongoCollection<Shift> Shifts { get; }
 
         public MongoDbContext(IConfiguration configuration)
@@ -23,7 +23,7 @@ namespace festival.Server.DataService
 
             // Initialiser collections
             Volunteers = _database.GetCollection<Volunteer>("Volunteers");
-            Coordinators = _database.GetCollection<Coordinator>("Coordinators");
+            Coordinators = _database.GetCollection<Coordinator>("Coordinators"); // Ikke brugt i denne version
             Shifts = _database.GetCollection<Shift>("Shifts");
         }
     }

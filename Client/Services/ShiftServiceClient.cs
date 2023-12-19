@@ -3,6 +3,7 @@ using festival.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -53,6 +54,16 @@ namespace festival.Client.Services
         {
             var response = await _httpClient.DeleteAsync($"api/shift/{id}");
             response.EnsureSuccessStatusCode();
+        }
+        public async Task AssignVolunteer(string shiftId, string volunteerId)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(new { volunteerId }), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"api/shift/{shiftId}/assign", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Kunne ikke tildele vagten: {errorResponse}");
+            }
         }
     }
 }
