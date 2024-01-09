@@ -4,6 +4,7 @@
 @inject ILocalStorageService LocalStorage
 
 @using Blazored.LocalStorage;
+@using MongoDB.Bson;
 @using festival.Client.Services;
 @using festival.Server.Interfaces;
 @using festival.Shared.Models
@@ -29,8 +30,7 @@ else
                 <th>Starttid</th>
                 <th>Sluttid</th>
                 <th>Prioritet</th>
-                <th>Tilmedte frivillige</th>
-                <th>Nødvendige frivillige</th>
+                <th>frivillige</th>
                 <th>Åbne pladser</th>
                 <th></th> <!-- Kolonne for tilmeldingsknappen -->
             </tr>
@@ -44,7 +44,6 @@ else
                     <td>@shift.StartTime</td>
                     <td>@shift.EndTime</td>
                     <td>@shift.Importance.ToString()</td>
-                    <td>@shift.AssignedVolunteers</td>
                     <td>@shift.RequiredVolunteers</td>
                     <td>@(shift.RequiredVolunteers - shift.AssignedVolunteers)</td>
                     <td>
@@ -70,26 +69,32 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        volunteerId = await LocalStorage.GetItemAsync<string>("volunteerId") ?? "Frivillig";
-        volunteerName = await LocalStorage.GetItemAsync<string>("volunteerName") ?? "Frivillig";
+        volunteerId = await LocalStorage.GetItemAsStringAsync("volunteerId") ?? string.Empty;
 
+        // Her henter du alle vagter, men du bør nok kun hente de relevante for den pågældende frivillig.
         shifts = await ShiftService.GetAllAsync();
     }
 
-private async Task AssignShift(string shiftId)
-{
-    var volunteerId = await LocalStorage.GetItemAsync<string>("volunteerId");
-    var volunteerName = await LocalStorage.GetItemAsync<string>("volunteerName"); // Hent navnet også
+    private async Task AssignShift(string shiftId)
+    {
+        // Hent volunteerId og check om den er gyldig.
+        if (!ObjectId.TryParse(volunteerId, out var validVolunteerId))
+        {
+            Console.WriteLine("VolunteerId er ikke gyldig: " + volunteerId);
+            return;
+        }
 
-    if (!string.IsNullOrEmpty(volunteerId) && !string.IsNullOrEmpty(volunteerName))
-    {
-        // Antager at din AssignVolunteer metode også tager et navn som parameter
-        await ShiftService.AssignVolunteer(shiftId, volunteerId);
-        // Opdater UI eller vis bekræftelse
+        // Antag nu at ShiftService.AssignVolunteer forventer en streng repræsentation af ObjectId.
+        try
+        {
+            await ShiftService.AssignVolunteer(shiftId, validVolunteerId.ToString());
+            Console.WriteLine("Frivillig er tilmeldt vagten med succes.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Fejl under tilmelding til vagten: " + ex.Message);
+        }
     }
-    else
-    {
-        // Fejlhåndtering: Ingen frivillig valgt
-    }
-}
+
+
 }

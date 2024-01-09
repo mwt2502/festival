@@ -35,7 +35,6 @@
         try
         {
             await LocalStorage.SetItemAsync("volunteerId", volunteer.Id);
-            await LocalStorage.SetItemAsync("volunteerName", volunteer.Name);
             await VolunteerService.CreateAsync(volunteer);
             NavigationManager.NavigateTo("/VolunteerPage");
         }

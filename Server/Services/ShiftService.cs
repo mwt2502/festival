@@ -18,17 +18,7 @@ namespace festival.Server.Services
             ConventionRegistry.Register("EnumStringConvention", pack, t => true);
             _shifts = dbContext.Shifts;
         }
-        public async Task AssignVolunteer(string shiftId, string volunteerId)
-        {
-            var filter = Builders<Shift>.Filter.Eq(s => s.Id, shiftId);
-            var update = Builders<Shift>.Update.AddToSet(s => s.AssignedVolunteersId, new ObjectId(volunteerId));
-            var result = await _shifts.UpdateOneAsync(filter, update);
-
-            if (!result.IsAcknowledged || result.ModifiedCount == 0)
-            {
-                throw new Exception("Vagt blev ikke opdateret med den frivillige.");
-            }
-        }
+       
 
         // Hent alle shifts
         public async Task<List<Shift>> GetAllAsync()
@@ -67,6 +57,28 @@ namespace festival.Server.Services
         {
             await _shifts.DeleteOneAsync(shift => shift.Id == id);
         }
+
+        public async Task AssignVolunteer(string shiftId, string volunteerId)
+        {
+            if (!ObjectId.TryParse(shiftId, out var validShiftId))
+            {
+                throw new ArgumentException("shiftId er ikke en gyldig ObjectId", nameof(shiftId));
+            }
+            if (!ObjectId.TryParse(volunteerId, out var validVolunteerId))
+            {
+                throw new ArgumentException("volunteerId er ikke en gyldig ObjectId", nameof(volunteerId));
+            }
+
+            var filter = Builders<Shift>.Filter.Eq(nameof(Shift.Id), validShiftId);
+            var update = Builders<Shift>.Update.AddToSet(nameof(Shift.AssignedVolunteersId), validVolunteerId);
+            var result = await _shifts.UpdateOneAsync(filter, update);
+
+            if (!result.IsAcknowledged || result.ModifiedCount == 0)
+            {
+                throw new Exception("Vagt blev ikke opdateret med den frivillige.");
+            }
+        }
+
 
 
     }

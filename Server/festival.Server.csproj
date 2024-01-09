@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>8016557f-91f2-4c26-9f2f-b782bd95cb1f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +13,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.10" />
-    <PackageReference Include="MongoDB.Bson" Version="2.23.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.23.0" />
+    <PackageReference Include="MongoDB.Bson" Version="2.23.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />

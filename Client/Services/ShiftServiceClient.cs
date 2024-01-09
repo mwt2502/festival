@@ -57,13 +57,13 @@ namespace festival.Client.Services
         }
         public async Task AssignVolunteer(string shiftId, string volunteerId)
         {
-            var content = new StringContent(JsonSerializer.Serialize(new { volunteerId }), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PutAsync($"api/shift/{shiftId}/assign", content);
+            var response = await _httpClient.PutAsync($"api/shift/{shiftId}/assign/{volunteerId}", null);
             if (!response.IsSuccessStatusCode)
             {
-                var errorResponse = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Kunne ikke tildele vagten: {errorResponse}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error assigning volunteer: {errorContent}");
             }
         }
+
     }
 }

@@ -82,25 +82,33 @@ namespace festival.Server.Controllers
             await _shiftService.DeleteAsync(id);
             return NoContent();
         }
-        [HttpPut("{shiftId}/assign")]
-        public async Task<IActionResult> AssignVolunteerToShift(string shiftId, [FromBody] AssignVolunteerDto dto)
+        [HttpPut("{shiftId}/assign/{volunteerId}")]
+        public async Task<IActionResult> AssignVolunteerToShift(string shiftId, string volunteerId)
         {
-            if (!ModelState.IsValid)
+            if (!ObjectId.TryParse(shiftId, out _))
             {
-                return BadRequest(ModelState);
+                return BadRequest("shiftId er ikke en gyldig ObjectId");
+            }
+
+            if (!ObjectId.TryParse(volunteerId, out _))
+            {
+                return BadRequest("volunteerId er ikke en gyldig ObjectId");
             }
 
             try
             {
-                await _shiftService.AssignVolunteer(shiftId, dto.VolunteerId);
-                return NoContent(); // 204 No Content hvis det lykkes
+                await _shiftService.AssignVolunteer(shiftId, volunteerId);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
-
         public class AssignVolunteerDto
         {
             [Required]
