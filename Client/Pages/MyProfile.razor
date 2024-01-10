@@ -1,64 +1,56 @@
-﻿@page "/volunteerpage1"
+﻿@page "/myprofile"
 
 @inject IShiftService ShiftService
 @inject ILocalStorageService LocalStorage
 
 @using Blazored.LocalStorage;
 @using MongoDB.Bson;
+@using System.Text.Json;
 @using festival.Server.Interfaces;
 @using festival.Shared.Models
 <link href="css/StyleSheet.css" rel="stylesheet" />
 
 <h2>Velkommen @volunteerName</h2>
-<h3>Vælg en vagt</h3>
+<h3>Dine tilmeldte vagter</h3>
 
-@if (shifts == null)
+@if (myShifts == null)
 {
-    <p>Henter tilgængelige vagter...</p>
+    <p>Henter dine vagter...</p>
 }
-else if (shifts.Count == 0)
+else if (myShifts.Count == 0)
 {
-    <p>Ingen tilgængelige vagter i øjeblikket.</p>
+    <p>Du har ingen tilmeldte vagter i øjeblikket.</p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th @onclick="() => SortTable(nameof(Shift.Title))">
+                <th>
                     Titel
-                    @SortIndicator(nameof(Shift.Title))
                 </th>
-                <th @onclick="() => SortTable(nameof(Shift.Area))">
+                <th>
                     Område
-                    @SortIndicator(nameof(Shift.Area))
-                    </th>
-                <th @onclick="() => SortTable(nameof(Shift.StartTime))">
+                </th>
+                <th>
                     Starttid
-                    @SortIndicator(nameof(Shift.StartTime))
-                    </th>
-                <th @onclick="() => SortTable(nameof(Shift.EndTime))">
+                </th>
+                <th>
                     Sluttid
-                    @SortIndicator(nameof(Shift.EndTime))
-                    </th>
-                <th @onclick="() => SortTable(nameof(Shift.Importance))">
+                </th>
+                <th>
                     Prioritet
-                    @SortIndicator(nameof(Shift.Importance))
-                    </th>
-                <th @onclick="() => SortTable(nameof(Shift.RequiredVolunteers))">
+                </th>
+                <th>
                     Antal frivillige
-                    @SortIndicator(nameof(Shift.RequiredVolunteers))
-                    </th>
-
-                <th @onclick="() => SortTable(nameof(Shift.AssignedVolunteersId))">
-                    Åbne pladser
-                    @SortIndicator(nameof(Shift.AssignedVolunteersId))
-                    </th>
-
+                </th>
+                <th>
+                    Handling
+                </th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var shift in shifts)
+            @foreach (var shift in myShifts)
             {
                 <tr>
                     <td>@shift.Title</td>
@@ -67,23 +59,8 @@ else
                     <td>@shift.EndTime</td>
                     <td>@shift.Importance.ToString()</td>
                     <td>@shift.RequiredVolunteers</td>
-                    <td>@(shift.RequiredVolunteers - shift.AssignedVolunteersId.Count)</td>
                     <td>
-                        @if (shift.AssignedVolunteersId.Contains(volunteerId))
-                        {
-                            <button class="btn btn-danger" @onclick="() => UnassignShift(shift.Id)">Afmeld</button>
-                        }
-                        else if (!shift.IsFull)
-                        {
-                            <button class="btn btn-primary" @onclick="() => AssignShift(shift.Id)">Tilmeld</button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-secondary" disabled>Fuld</button>
-                        }
-                    </td>
-
-                    <td>
+                        <button class="btn btn-danger" @onclick="() => UnassignShift(shift.Id)">Afmeld</button>
                     </td>
                 </tr>
             }
@@ -91,45 +68,49 @@ else
     </table>
 }
 
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info" role="alert">
+        @message
+    </div>
+}
 
 @code {
     private string currentSortColumn = null;
     private bool isSortAscending = true;
 
-    private List<Shift> shifts;
+    private List<Shift> myShifts;
     private string volunteerName;
     private string volunteerId;
     private string message;
 
-
     protected override async Task OnInitializedAsync()
     {
-        volunteerId = await LocalStorage.GetItemAsStringAsync("volunteerId");
-        volunteerName = await LocalStorage.GetItemAsStringAsync("volunteerName");
-
-        if (string.IsNullOrEmpty(volunteerId))
-        {
-            message = "Dit frivillige ID er ikke blevet sat. Log venligst ind igen.";
-            return;
-        }
-
-        shifts = await ShiftService.GetAllAsync();
-    }
-
-    private async Task AssignShift(string shiftId)
-    {
-        // volunteerId er allerede en string, så vi behøver ikke at konvertere den til ObjectId her
         try
         {
-            await ShiftService.AssignVolunteer(shiftId, volunteerId);
-            message = "Frivillig er tilmeldt vagten med succes.";
-            await UpdateShifts();
+            volunteerId = await LocalStorage.GetItemAsStringAsync("volunteerId");
+            volunteerName = await LocalStorage.GetItemAsStringAsync("volunteerName");
+
+            if (string.IsNullOrEmpty(volunteerId))
+            {
+                message = "Dit frivillige ID er ikke blevet sat. Log venligst ind igen.";
+                return;
+            }
+
+            // Hent kun dine tilmeldte vagter
+            myShifts = await ShiftService.GetAssignedShiftsAsync(volunteerId);
+        }
+        catch (JsonException jsonEx)
+        {
+            message = $"Der skete en fejl ved indlæsning af vagter: {jsonEx.Message}";
+            // Log yderligere information om fejlen her, eller vis den i brugergrænsefladen.
         }
         catch (Exception ex)
         {
-            message = "Fejl under tilmelding til vagten: " + ex.Message;
+            message = $"Der opstod en uventet fejl: {ex.Message}";
         }
     }
+
     private async Task UnassignShift(string shiftId)
     {
         bool success = await ShiftService.UnassignVolunteer(shiftId, volunteerId);
@@ -143,11 +124,11 @@ else
             message = "Fejl under afmelding fra vagten.";
         }
     }
+  
     private async Task UpdateShifts()
     {
-        shifts = await ShiftService.GetAllAsync();
+        myShifts = await ShiftService.GetAssignedShiftsAsync(volunteerId);
     }
-
     private void SortTable(string columnName)
     {
         if (currentSortColumn != columnName)
@@ -161,8 +142,8 @@ else
         }
 
         Func<Shift, object> keySelector = GetKeySelector(columnName);
-        shifts = isSortAscending ? shifts.OrderBy(keySelector).ToList()
-                                 : shifts.OrderByDescending(keySelector).ToList();
+        myShifts = isSortAscending ? myShifts.OrderBy(keySelector).ToList()
+                                 : myShifts.OrderByDescending(keySelector).ToList();
     }
 
     private Func<Shift, object> GetKeySelector(string key)
@@ -184,7 +165,7 @@ else
             case nameof(Shift.AssignedVolunteersId): // For "Åbne pladser"
                 return x => x.RequiredVolunteers - x.AssignedVolunteersId.Count;
             default:
-                return x => x.Importance; // Default to sorting by Title if no match
+                return x => x.Title; // Default to sorting by Title if no match
         }
     }
     private MarkupString SortIndicator(string columnName)

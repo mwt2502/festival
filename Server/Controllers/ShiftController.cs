@@ -1,4 +1,5 @@
 ﻿using festival.Server.Interfaces;
+
 using festival.Server.Services;
 using festival.Shared.Models;
 using Microsoft.AspNetCore.Http;
@@ -82,38 +83,53 @@ namespace festival.Server.Controllers
             await _shiftService.DeleteAsync(id);
             return NoContent();
         }
+
         [HttpPut("{shiftId}/assign/{volunteerId}")]
-        public async Task<IActionResult> AssignVolunteerToShift(string shiftId, string volunteerId)
+        public async Task<IActionResult> xx(string shiftId, string volunteerId)
         {
-            if (!ObjectId.TryParse(shiftId, out _))
-            {
-                return BadRequest("shiftId er ikke en gyldig ObjectId");
-            }
-
-            if (!ObjectId.TryParse(volunteerId, out _))
-            {
-                return BadRequest("volunteerId er ikke en gyldig ObjectId");
-            }
-
             try
             {
                 await _shiftService.AssignVolunteer(shiftId, volunteerId);
                 return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
-        public class AssignVolunteerDto
+
+        [HttpPut("{shiftId}/unassign/{volunteerId}")]
+        public async Task<IActionResult> UnassignVolunteer(string shiftId, string volunteerId)
         {
-            [Required]
-            public string VolunteerId { get; set; }
+            bool success = await _shiftService.UnassignVolunteer(shiftId, volunteerId);
+            if (success)
+            {
+                return Ok("Volunteer unassigned successfully.");
+            }
+            else
+            {
+                return BadRequest("Error unassigning volunteer.");
+            }
         }
+
+        [HttpGet("assignedTo/{volunteerId}")]
+        public async Task<IActionResult> GetAssignedShifts(string volunteerId)
+        {
+            try
+            {
+                var assignedShifts = await _shiftService.GetAssignedShiftsAsync(volunteerId);
+
+                // Returner vagterne som JSON-respons
+                return Ok(assignedShifts);
+            }
+            catch (Exception ex)
+            {
+                // Hvis der opstår en fejl, kan du returnere en fejlrespons med passende statuskode og meddelelse
+                return StatusCode(500, $"An error occurred: {ex.Message} (controller)");
+            }
+        }
+
+
     }
 
 }

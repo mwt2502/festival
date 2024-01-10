@@ -35,20 +35,22 @@ namespace festival.Client.Services
         public async Task<Volunteer> GetByIdAsync(string id)
         {
             return await _httpClient.GetFromJsonAsync<Volunteer>($"api/volunteer/{id}");
-        }   
+        }
 
-        public async Task CreateAsync(Volunteer volunteer)
+        public async Task<Volunteer> CreateAsync(Volunteer volunteer)
         {
-            // Fjern ID, da det vil blive genereret af MongoDB
-            volunteer.Id = null;
-
+            // Send anmodningen til serveren og få respons
             var response = await _httpClient.PostAsJsonAsync("api/volunteer", volunteer);
 
-            if (!response.IsSuccessStatusCode)
+            // Tjek at anmodningen var vellykket og returner den frivillige
+            if (response.IsSuccessStatusCode)
             {
-                // Læs fejlbesked fra response og kast en exception med denne besked
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new ApplicationException($"Fejl under oprettelse af frivillig: {errorContent}");
+                return await response.Content.ReadFromJsonAsync<Volunteer>();
+            }
+            else
+            {
+                // Håndter fejl eller kast en undtagelse
+                throw new HttpRequestException($"Failed to create volunteer: {response.ReasonPhrase}");
             }
         }
 
@@ -63,6 +65,7 @@ namespace festival.Client.Services
             var response = await _httpClient.DeleteAsync($"api/volunteer/{id}");
             response.EnsureSuccessStatusCode();
         }
+
     }
 
 }

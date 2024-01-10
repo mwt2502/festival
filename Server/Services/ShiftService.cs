@@ -11,14 +11,18 @@ namespace festival.Server.Services
     public class ShiftService : IShiftService
     {
         private readonly IMongoCollection<Shift> _shifts;
+        private readonly IMongoCollection<Volunteer> _volunteers; 
+
 
         public ShiftService(MongoDbContext dbContext)
         {
             var pack = new ConventionPack { new EnumRepresentationConvention(BsonType.String) };
             ConventionRegistry.Register("EnumStringConvention", pack, t => true);
             _shifts = dbContext.Shifts;
+            _volunteers = dbContext.Volunteers; 
+
         }
-       
+
 
         // Hent alle shifts
         public async Task<List<Shift>> GetAllAsync()
@@ -58,19 +62,12 @@ namespace festival.Server.Services
             await _shifts.DeleteOneAsync(shift => shift.Id == id);
         }
 
+        //"assign" en frivillig
         public async Task AssignVolunteer(string shiftId, string volunteerId)
         {
-            if (!ObjectId.TryParse(shiftId, out var validShiftId))
-            {
-                throw new ArgumentException("shiftId er ikke en gyldig ObjectId", nameof(shiftId));
-            }
-            if (!ObjectId.TryParse(volunteerId, out var validVolunteerId))
-            {
-                throw new ArgumentException("volunteerId er ikke en gyldig ObjectId", nameof(volunteerId));
-            }
+            var filter = Builders<Shift>.Filter.Eq("Id", shiftId);
+            var update = Builders<Shift>.Update.AddToSet("AssignedVolunteersId", volunteerId);
 
-            var filter = Builders<Shift>.Filter.Eq(nameof(Shift.Id), validShiftId);
-            var update = Builders<Shift>.Update.AddToSet(nameof(Shift.AssignedVolunteersId), validVolunteerId);
             var result = await _shifts.UpdateOneAsync(filter, update);
 
             if (!result.IsAcknowledged || result.ModifiedCount == 0)
@@ -78,9 +75,29 @@ namespace festival.Server.Services
                 throw new Exception("Vagt blev ikke opdateret med den frivillige.");
             }
         }
+        public async Task<bool> UnassignVolunteer(string shiftId, string volunteerId)
+        {
+            var filter = Builders<Shift>.Filter.Eq(s => s.Id, shiftId);
+            var update = Builders<Shift>.Update.Pull(s => s.AssignedVolunteersId, volunteerId);
 
+            var result = await _shifts.UpdateOneAsync(filter, update);
 
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+        public async Task<List<Shift>> GetAssignedShiftsAsync(string volunteerId)
+        {
+            // Brug en filterdefinition til at finde vagter, hvor volunteerId er i AssignedVolunteersId
+            var filter = Builders<Shift>.Filter.AnyEq(s => s.AssignedVolunteersId, volunteerId);
+
+            // Find og returner de tilmeldte vagter baseret på filteret
+            var assignedShifts = await _shifts.Find(filter).ToListAsync();
+
+            return assignedShifts;
+        }
 
     }
 
+
 }
+
+

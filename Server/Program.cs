@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IVolunteerService, VolunteerService>();
-builder.Services.AddScoped<ICoordinatorService, CoordinatorService>();
+// builder.Services.AddScoped<ICoordinatorService, CoordinatorService>(); Ikke brugt i denne version
 builder.Services.AddScoped<IShiftService, ShiftService>();
 
 builder.Services.AddEndpointsApiExplorer(); 

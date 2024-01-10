@@ -5,8 +5,10 @@ namespace festival.Server.Interfaces
     {
         Task<List<Volunteer>> GetAllAsync();
         Task<Volunteer> GetByIdAsync(string id);
-        Task CreateAsync(Volunteer volunteer);
+        Task<Volunteer> CreateAsync(Volunteer volunteer);
         Task UpdateAsync(string id, Volunteer volunteerIn);
         Task DeleteAsync(string id);
+
     }
 }
+    

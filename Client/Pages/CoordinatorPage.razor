@@ -1,11 +1,21 @@
 ﻿@page "/coordinatorpage"
 @inject HttpClient Http
+@inject IShiftService ShiftService
+@inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
+
 @using festival.Shared.Models
+@using Blazored.LocalStorage;
+@using MongoDB.Bson;
+@using festival.Server.Interfaces;
+
+<link href="css/StyleSheet.css" rel="stylesheet" />
+
 
 <PageTitle>Koordinatorside</PageTitle>
+<h2>Velkommen til koordinatorsiden.</h2>
 
-<h3>Opret ny vagt</h3>
+<h4>Opret en vagt</h4>
 
 <EditForm Model="@shift" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -60,38 +70,158 @@
 
     <!--Knap der opretter shift -->
     <button type="submit" class="btn btn-primary">Opret vagt</button>
+    
 </EditForm>
 
-@code {
-    private Shift shift = new Shift();
-    private string errorMessage; // ny
+<!-- Tabel til at vise vagter -->
+@if (shifts != null && shifts.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th @onclick="() => SortTable(nameof(Shift.Title))">
+                    Titel @SortIndicator(nameof(Shift.Title))
+                </th>
+                <th @onclick="() => SortTable(nameof(Shift.Area))">
+                    Område @SortIndicator(nameof(Shift.Area))
+                </th>
+                <th @onclick="() => SortTable(nameof(Shift.StartTime))">
+                    Starttid @SortIndicator(nameof(Shift.StartTime))
+                </th>
+                <th @onclick="() => SortTable(nameof(Shift.EndTime))">
+                    Sluttid @SortIndicator(nameof(Shift.EndTime))
+                </th>
+                <th @onclick="() => SortTable(nameof(Shift.RequiredVolunteers))">
+                    Påkrævede frivillige @SortIndicator(nameof(Shift.RequiredVolunteers))
+                </th>
+                <th @onclick="() => SortTable(nameof(Shift.Importance))">
+                    Vigtighed @SortIndicator(nameof(Shift.Importance))
+                </th>
+                <th>
+                    Handling
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var shift in shifts)
+            {
+                <tr>
+                    <td>@shift.Title</td>
+                    <td>@shift.Area</td>
+                    <td>@shift.StartTime</td>
+                    <td>@shift.EndTime</td>
+                    <td>@shift.RequiredVolunteers</td>
+                    <td>@shift.Importance</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteShift(shift.Id)">Slet Vagt</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Ingen vagter at vise.</p>
+}
 
+@code {
+
+    private Shift shift = new Shift();
+    private List<Shift> shifts; 
+    private string currentSortColumn;
+    private bool isSortAscending = true;
+    private string errorMessage;
+
+    private string volunteerName;
+    private string volunteerId;
+    private string message;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        volunteerId = await LocalStorage.GetItemAsStringAsync("volunteerId");
+        volunteerName = await LocalStorage.GetItemAsStringAsync("volunteerName");
+
+        if (string.IsNullOrEmpty(volunteerId))
+        {
+            message = "Dit frivillige ID er ikke blevet sat. Log venligst ind igen.";
+            return;
+        }
+
+        shifts = await ShiftService.GetAllAsync();
+    }
     private void ValidateInput(ChangeEventArgs e)
     {
         errorMessage = shift.ValidateTimes();
     }
 
+    private async Task DeleteShift(string shiftId)
+    {
+        await ShiftService.DeleteAsync(shiftId);
+        shifts = shifts.Where(s => s.Id != shiftId).ToList();
+    }
+    private void SortTable(string columnName)
+    {
+        if (currentSortColumn != columnName)
+        {
+            currentSortColumn = columnName;
+            isSortAscending = true;
+        }
+        else
+        {
+            isSortAscending = !isSortAscending;
+        }
+
+        Func<Shift, object> keySelector = GetKeySelector(columnName);
+        shifts = isSortAscending ? shifts.OrderBy(keySelector).ToList()
+                                 : shifts.OrderByDescending(keySelector).ToList();
+    }
+
+    private Func<Shift, object> GetKeySelector(string key)
+    {
+        switch (key)
+        {
+            case nameof(Shift.Title):
+                return x => x.Title;
+            case nameof(Shift.Area):
+                return x => x.Area;
+            case nameof(Shift.StartTime):
+                return x => x.StartTime;
+            case nameof(Shift.EndTime):
+                return x => x.EndTime;
+            case nameof(Shift.Importance):
+                return x => x.Importance;
+            case nameof(Shift.RequiredVolunteers):
+                return x => x.RequiredVolunteers;
+            case nameof(Shift.AssignedVolunteersId):
+                return x => x.RequiredVolunteers - x.AssignedVolunteersId.Count;
+            default:
+                return x => x.RequiredVolunteers; 
+        }
+    }
+    private MarkupString SortIndicator(string columnName)
+    {
+        if (currentSortColumn == columnName)
+        {
+            return (MarkupString)(isSortAscending ? "↑" : "↓");
+        }
+        return (MarkupString)"↕"; // Indikator for at kolonnen kan sorteres, men ikke er den aktuelle sorteringskolonne.
+    }
     private async Task HandleValidSubmit()
     {
-        errorMessage = shift.ValidateTimes();
-        if (!string.IsNullOrEmpty(errorMessage))
-        {
-            // Hvis der er en fejl, stop og vis fejlbeskeden
-            return;
-        }
         var response = await Http.PostAsJsonAsync("api/shift", shift);
         if (response.IsSuccessStatusCode)
         {
-            
+            // Hvis vagten er oprettet, hent listen af vagter igen for at opdatere visningen
+            shifts = await ShiftService.GetAllAsync();
             shift = new Shift(); // Nulstil formen
-             // NavigationManager.NavigateTo("/");
         }
-        else 
+        else
         {
-            // Håndter fejl
-            Console.Error.WriteLine("Fejl under oprettelse af shift.");
+            errorMessage = "Fejl under oprettelse af vagten.";
         }
-    }
+    }   
 
 }
 @if (!string.IsNullOrEmpty(errorMessage))

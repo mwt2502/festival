@@ -18,4 +18,12 @@
     <ProjectReference Include="..\Shared\festival.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="C:\Users\Mathias\Desktop\VolunteerPage.razor" Link="VolunteerPage.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\" />
+  </ItemGroup>
+
 </Project>

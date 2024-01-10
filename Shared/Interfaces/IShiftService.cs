@@ -9,7 +9,8 @@ namespace festival.Server.Interfaces
         Task UpdateAsync(string id, Shift shiftIn);
         Task DeleteAsync(string id);
         Task AssignVolunteer(string shiftId, string volunteerId);
-
+        Task<bool> UnassignVolunteer(string shiftId, string volunteerId);
+        Task<List<Shift>> GetAssignedShiftsAsync(string volunteerId);
 
     }
 }

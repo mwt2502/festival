@@ -10,6 +10,8 @@
 
 
 <PageTitle>Tilmeld dig som frivillig</PageTitle>
+<h2>Tilmeld dig som frivillig</h2>
+
 
 <div class="container mt-5">
     <EditForm Model="@volunteer" OnValidSubmit="HandleValidSubmit">
@@ -34,13 +36,20 @@
     {
         try
         {
-            await LocalStorage.SetItemAsync("volunteerId", volunteer.Id);
-            await VolunteerService.CreateAsync(volunteer);
+            // Opret den nye frivillige i databasen og få ID'et tilbage
+            var createdVolunteer = await VolunteerService.CreateAsync(volunteer);
+
+            // Gem den frivilliges ID og navn i localStorage
+            await LocalStorage.SetItemAsync("volunteerId", createdVolunteer.Id);
+            await LocalStorage.SetItemAsync("volunteerName", createdVolunteer.Name);
+
+            // Naviger til VolunteerPage
             NavigationManager.NavigateTo("/VolunteerPage");
         }
         catch (Exception ex)
         {
-            // Håndter fejl
+            errorMessage = ex.Message;
+            // Håndter fejl, f.eks. vis en fejlbesked til brugeren
         }
     }
 

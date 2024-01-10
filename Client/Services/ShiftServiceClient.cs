@@ -3,6 +3,7 @@ using festival.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -58,12 +59,39 @@ namespace festival.Client.Services
         public async Task AssignVolunteer(string shiftId, string volunteerId)
         {
             var response = await _httpClient.PutAsync($"api/shift/{shiftId}/assign/{volunteerId}", null);
+
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException($"Error assigning volunteer: {errorContent}");
             }
         }
+        public async Task<List<Shift>> GetAssignedShiftsAsync(string volunteerId)
+        {
+            // Foretag en GET-anmodning til API'en for at få tildelte vagter baseret på volunteerId
+            var response = await _httpClient.GetAsync($"api/shift/assignedTo/{volunteerId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Læs JSON-responsen og deserialiser den til en liste af Shift-objekter ved hjælp af JSON-serien.
+                return await response.Content.ReadFromJsonAsync<List<Shift>>();
+            }
+            else
+            {
+                // Hvis anmodningen mislykkedes, få fejlteksten fra responsen og kast en HttpRequestException.
+                var error = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Failed to get assigned shifts. Status code: {response.StatusCode}, Error: {error}");
+            }
+        }
+
+
+
+        public async Task<bool> UnassignVolunteer(string shiftId, string volunteerId)
+        {
+            var response = await _httpClient.PutAsync($"api/shift/{shiftId}/unassign/{volunteerId}", null);
+            return response.IsSuccessStatusCode;
+        }
+
 
     }
 }

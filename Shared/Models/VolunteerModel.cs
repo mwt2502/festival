@@ -14,21 +14,14 @@ namespace festival.Shared.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
+        public string? Id { get; set; } // Unik identifikator for en frivillig, repræsenteret som en ObjectId fra MongoDB
 
         [Required(ErrorMessage = "Navn er påkrævet")]
-        public string? Name { get; set; }
-        public List<ObjectId> AssignedShifts { get; set; } = new List<ObjectId>(); // Referencer til Shifts
+        public string? Name { get; set; } // Navnet på frivilligen, markeret som påkrævet med en fejlbesked ved manglende udfyldelse
 
-        public void AssignShift(ObjectId shiftId)
-        {
-            AssignedShifts.Add(shiftId);
+        [BsonRepresentation(BsonType.ObjectId)]
+        public List<string> AssignedShifts { get; set; } = new List<string>(); // En liste over strengrepræsentationer af tildelte vagter
 
-        }
 
-        public void UnassignShift(ObjectId shiftId)
-        {
-            AssignedShifts.Remove(shiftId);
-        }
     }
 }

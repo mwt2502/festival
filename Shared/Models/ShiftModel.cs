@@ -39,10 +39,35 @@ namespace festival.Shared.Models
         [Range(1, 50, ErrorMessage = "Antallet af krævede frivillige skal være mellem 1 og 50.")]
         public int RequiredVolunteers { get; set; }
         public int AssignedVolunteers { get; set; }
+        public List<string>? VolunteerNames { get; set; }
 
-        public List<ObjectId> AssignedVolunteersId { get; set; } = new List<ObjectId>();
+        public List<string> AssignedVolunteersId { get; set; } = new List<string>();
 
         public bool IsFull => AssignedVolunteersId.Count >= RequiredVolunteers;
+
+
+        public enum ShiftImportance
+        {
+            [EnumMember(Value = "Low")]
+            Low,
+            [EnumMember(Value = "Medium")]
+            Medium,
+            [EnumMember(Value = "High")]
+            High
+        }
+        public enum ShiftArea
+        {
+            Madbod_Kebab,
+            Madbod_Burger,
+            Madbod_Sushi,
+            Hoppeoborg,
+            Indgang,
+            Udgang,
+            Scene_1,
+            Scene_2,
+            Scene_3,
+        }
+
 
         // Server validering af datoer 
         public string ValidateTimes()
@@ -69,29 +94,7 @@ namespace festival.Shared.Models
             return string.Empty; // Ingen fejl
         }
 
-        public enum ShiftImportance
-        {
-            [EnumMember(Value = "Low")]
-            Low,
-            [EnumMember(Value = "Medium")]
-            Medium,
-            [EnumMember(Value = "High")]
-            High
-        }
-        public enum ShiftArea
-        {
-            Madbod_Kebab,
-            Madbod_Burger,
-            Madbod_Sushi,
-            Hoppeoborg,
-            Indgang,
-            Udgang,
-            Scene_1,
-            Scene_2,
-            Scene_3,
-        }
-
-        public void AssignVolunteer(ObjectId volunteerId)
+        public void AssignVolunteer(string volunteerId)
         {
             if (!IsFull)
             {
@@ -104,7 +107,7 @@ namespace festival.Shared.Models
             }
         }
 
-        public void UnassignVolunteer(ObjectId volunteerId)
+        public void UnassignVolunteer(string volunteerId)
         {
             AssignedVolunteersId.Remove(volunteerId);
         }

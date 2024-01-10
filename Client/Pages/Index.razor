@@ -27,7 +27,7 @@
         {
             <div>
                 <br>
-                <br> 
+                <br>
                 <h3>Vælg din profil eller opret dig!</h3>
                 <br>
             </div>
@@ -59,19 +59,18 @@
 
     private async Task SelectVolunteer(ChangeEventArgs e)
     {
-        selectedVolunteerId = e.Value.ToString();
+        selectedVolunteerId = e.Value?.ToString();
         if (!string.IsNullOrEmpty(selectedVolunteerId))
         {
-            var selectedVolunteer = volunteers.FirstOrDefault(v => v.Id == selectedVolunteerId);
+            var selectedVolunteer = volunteers?.FirstOrDefault(v => v.Id == selectedVolunteerId);
             if (selectedVolunteer != null)
             {
                 await LocalStorage.SetItemAsync("volunteerId", selectedVolunteer.Id);
                 await LocalStorage.SetItemAsync("volunteerName", selectedVolunteer.Name);
-                NavigationManager.NavigateTo("/VolunteerPage");
+                NavigationManager.NavigateTo("/volunteerpage");
             }
         }
     }
-
 
     private void GoToSignUp()
     {

@@ -29,9 +29,11 @@ builder.Services.AddScoped(sp => new HttpClient
 });
 
 // Tilføjer services for de forskellige interfaces i applikationen
+
 builder.Services.AddScoped<IVolunteerService, VolunteerServiceClient>();
 builder.Services.AddScoped<IShiftService, ShiftServiceClient>();
-builder.Services.AddScoped<ICoordinatorService, CoordinatorServiceClient>();
+// builder.Services.AddScoped<ICoordinatorService, CoordinatorServiceClient>();
+
 
 // Tilføjer local storage service til at gemme data lokalt i browseren
 builder.Services.AddBlazoredLocalStorage();
